@@ -83,6 +83,7 @@ function BookDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingAvailability, setIsUpdatingAvailability] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     let ignore = false;
@@ -114,6 +115,12 @@ function BookDetail() {
       ignore = true;
     };
   }, [id, reloadKey]);
+
+  useEffect(() => {
+    if (book?.image?.length) {
+      setActiveImage(0);
+    }
+  }, [book]);
 
   const isOwner = useMemo(
     () => Boolean(user?._id && book?.uploader?._id && user._id === book.uploader._id),
@@ -197,15 +204,29 @@ function BookDetail() {
         <div className="rounded-[2rem] border-2 border-[#1A1A1A] bg-[#C4B5FD] p-4 book-shadow-lg">
           <div className="relative overflow-hidden rounded-[1.65rem] border-2 border-[#1A1A1A] bg-white">
             <div className="aspect-[4/4.5] bg-[#EEEAE1]">
-              {book.image ? (
+              {book.image && book.image.length > 0 ? (
                 <img
-                  src={book.image}
+                  src={book.image[activeImage]}
                   alt={book.bookname}
                   className="h-full w-full object-cover object-center"
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-[#7A766D]">
                   <BookCopy className="h-16 w-16" />
+                </div>
+              )}
+
+              {book.image?.length > 1 && (
+                <div className="flex gap-2 mt-3 overflow-x-auto">
+                  {book.image.map((img, i) => (
+                    <img
+                      key={i}
+                      src={img}
+                      onClick={() => setActiveImage(i)}
+                      className={`h-16 w-16 object-cover rounded-lg border-2 cursor-pointer ${activeImage === i ? "border-black" : "border-[#1A1A1A]"
+                        }`}
+                    />
+                  ))}
                 </div>
               )}
             </div>
@@ -290,9 +311,8 @@ function BookDetail() {
                     event.preventDefault();
                   }
                 }}
-                className={`book-button-dark w-full !py-3 ${
-                  !whatsappLink || !book.isAvailable ? "pointer-events-none opacity-60" : ""
-                }`}
+                className={`book-button-dark w-full !py-3 ${!whatsappLink || !book.isAvailable ? "pointer-events-none opacity-60" : ""
+                  }`}
               >
                 <MessageCircle className="h-4 w-4" />
                 WhatsApp Seller
@@ -315,9 +335,8 @@ function BookDetail() {
                     event.preventDefault();
                   }
                 }}
-                className={`book-button-light w-full !py-3 ${
-                  !emailLink ? "pointer-events-none opacity-60" : ""
-                }`}
+                className={`book-button-light w-full !py-3 ${!emailLink ? "pointer-events-none opacity-60" : ""
+                  }`}
               >
                 <Mail className="h-4 w-4" />
                 Email

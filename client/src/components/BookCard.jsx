@@ -18,7 +18,7 @@ function BookCard({ book, footer = null, showAvailability = false }) {
       <div className="relative aspect-[4/3] overflow-hidden bg-[#EEEAE1]">
         {book.image ? (
           <img
-            src={book.image}
+            src={book.image?.[0]}
             alt={book.bookname}
             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
           />

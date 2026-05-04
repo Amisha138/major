@@ -51,7 +51,7 @@ const bookSchema = new mongoose.Schema(
       trim: true,
     },
     image: {
-      type: String,
+      type: [String],
       trim: true,
     },
     uploader: {

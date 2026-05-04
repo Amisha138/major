@@ -24,28 +24,27 @@ function Upload() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState(initialFormData);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  // const [previewUrl, setPreviewUrl] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(
-    () => () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    },
-    [previewUrl],
-  );
+  // useEffect(
+  //   () => () => {
+  //     if (previewUrl) {
+  //       URL.revokeObjectURL(previewUrl);
+  //     }
+  //   },
+  //   [],
+  // );
 
   const resetImage = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
+    // if (previewUrl) {
+    //   URL.revokeObjectURL(previewUrl);
+    // }
 
-    setSelectedFile(null);
-    setPreviewUrl("");
+    setSelectedFiles([]);
     setError("");
 
     if (fileInputRef.current) {
@@ -53,30 +52,23 @@ function Upload() {
     }
   };
 
-  const setImageFile = (file) => {
-    if (!file) {
-      return;
-    }
+  const setImageFiles = (files) => {
+    const validFiles = Array.from(files).filter((file) => {
+      if (!file.type.startsWith("image/")) {
+        toast.error("Only images allowed");
+        return false;
+      }
 
-    if (!file.type.startsWith("image/")) {
-      setError("Please select an image file");
-      return;
-    }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Max 5MB per image");
+        return false;
+      }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Image must be 5MB or smaller");
-      return;
-    }
+      return true;
+    });
 
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-
-    setError("");
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    setSelectedFiles((prev) => [...prev, ...validFiles].slice(0, 5));
   };
-
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -98,8 +90,8 @@ function Upload() {
     event.preventDefault();
     setError("");
 
-    if (!selectedFile) {
-      setError("Please upload a book image");
+    if (selectedFiles.length === 0) {
+      setError("Please upload at least one image");
       return;
     }
 
@@ -112,7 +104,9 @@ function Upload() {
 
     try {
       const payload = new FormData();
-      payload.append("image", selectedFile);
+      selectedFiles.forEach((file) => {
+        payload.append("images", file);
+      });
 
       Object.entries(formData).forEach(([key, value]) => {
         if (typeof value === "boolean") {
@@ -162,20 +156,23 @@ function Upload() {
           onDrop={(event) => {
             event.preventDefault();
             setIsDragging(false);
-            setImageFile(event.dataTransfer.files?.[0]);
+            setImageFiles(event.dataTransfer.files);
           }}
-          className={`mt-8 flex w-full flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed px-6 py-10 text-center transition ${
-            isDragging
-              ? "border-[#1A1A1A] bg-[#99E5D4]"
-              : "border-[#1A1A1A] bg-[#FFFDF8] hover:bg-[#F9F3E7]"
-          }`}
+          className={`mt-8 flex w-full flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed px-6 py-10 text-center transition ${isDragging
+            ? "border-[#1A1A1A] bg-[#99E5D4]"
+            : "border-[#1A1A1A] bg-[#FFFDF8] hover:bg-[#F9F3E7]"
+            }`}
         >
-          {previewUrl ? (
-            <img
-              src={previewUrl}
-              alt="Book preview"
-              className="max-h-96 w-full rounded-[1.25rem] border-2 border-[#1A1A1A] object-cover"
-            />
+          {selectedFiles.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3">
+              {selectedFiles.map((file, index) => (
+                <img
+                  key={index}
+                  src={URL.createObjectURL(file)}
+                  className="h-32 w-full object-cover rounded-xl border"
+                />
+              ))}
+            </div>
           ) : (
             <>
               <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#1A1A1A] bg-white">
@@ -197,7 +194,8 @@ function Upload() {
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={(event) => setImageFile(event.target.files?.[0])}
+            multiple
+            onChange={(event) => setImageFiles(event.target.files)}
           />
 
           <button
@@ -208,7 +206,7 @@ function Upload() {
             Choose Image
           </button>
 
-          {selectedFile ? (
+          {selectedFiles.length > 0 ? (
             <button type="button" onClick={resetImage} className="book-button-light flex-1">
               <X className="h-4 w-4" />
               Remove
@@ -216,11 +214,11 @@ function Upload() {
           ) : null}
         </div>
 
-        {selectedFile ? (
-          <p className="mt-4 rounded-[1.25rem] border-2 border-[#1A1A1A] bg-[#FFF8E1] px-4 py-3 text-sm text-[#5C574F]">
-            Selected image: {selectedFile.name}
+        {selectedFiles.length > 0 && (
+          <p className="mt-4 text-sm text-[#5C574F]">
+            {selectedFiles.length} images selected
           </p>
-        ) : null}
+        )}
       </div>
 
       <div className="rounded-[1.75rem] border-2 border-[#1A1A1A] bg-white p-6 book-shadow sm:p-8">
@@ -399,9 +397,8 @@ function Upload() {
                   role="switch"
                   aria-checked={formData.openToExchange}
                   onClick={handleToggleExchange}
-                  className={`relative inline-flex h-12 w-24 items-center rounded-full border-2 border-[#1A1A1A] ${
-                    formData.openToExchange ? "bg-[#99E5D4]" : "bg-white"
-                  } book-shadow-sm`}
+                  className={`relative inline-flex h-12 w-24 items-center rounded-full border-2 border-[#1A1A1A] ${formData.openToExchange ? "bg-[#99E5D4]" : "bg-white"
+                    } book-shadow-sm`}
                 >
                   <span className="sr-only">Toggle exchange option</span>
                   <span className="flex w-full items-center justify-between px-3 text-xs font-bold uppercase tracking-[0.18em] text-[#1A1A1A]">
@@ -409,9 +406,8 @@ function Upload() {
                     <span>Yes</span>
                   </span>
                   <span
-                    className={`absolute top-1 h-8 w-10 rounded-full border-2 border-[#1A1A1A] bg-[#F5C842] transition-transform duration-200 ${
-                      formData.openToExchange ? "translate-x-[2.7rem]" : "translate-x-1"
-                    }`}
+                    className={`absolute top-1 h-8 w-10 rounded-full border-2 border-[#1A1A1A] bg-[#F5C842] transition-transform duration-200 ${formData.openToExchange ? "translate-x-[2.7rem]" : "translate-x-1"
+                      }`}
                   />
                 </button>
               </div>

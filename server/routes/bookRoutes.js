@@ -11,7 +11,7 @@ const { uploadBookImage } = require("../middleware/uploadMiddleware.js");
 
 const router = express.Router();
 
-router.route("/").get(getBooks).post(protect, uploadBookImage.single("image"), createBook);
+router.route("/").get(getBooks).post(protect, uploadBookImage.array("images",5), createBook);
 router.patch("/:id/unavailable", protect, markBookUnavailable);
 router.route("/:id").get(getBookById).delete(protect, deleteBook);
 

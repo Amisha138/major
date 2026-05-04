@@ -182,15 +182,17 @@ const createBook = asyncHandler(async (req, res) => {
     throw new Error("Wanted books are required when exchange is enabled");
   }
 
-  if (!req.file) {
+  if (!req.files || req.files.length === 0) {
     res.status(400);
-    throw new Error("Book image is required");
+    throw new Error("At least one image is required");
   }
 
-  let uploadedAsset;
+  let uploadedAssets = [];
 
   try {
-    uploadedAsset = getUploadedAsset(req.file, "bookweb/books");
+    uploadedAssets = req.files.map((file) =>
+      getUploadedAsset(file, "bookweb/books")
+    );
 
     const book = await Book.create({
       bookname,
@@ -204,7 +206,7 @@ const createBook = asyncHandler(async (req, res) => {
       description,
       openToExchange,
       wantedBooks: openToExchange ? wantedBooks : undefined,
-      image: uploadedAsset.url,
+      image: uploadedAssets.map((a) => a.url),
       uploader: req.user._id,
     });
 
@@ -215,10 +217,11 @@ const createBook = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
-    if (uploadedAsset?.url) {
-      try {
-        await destroyUploadedAsset(uploadedAsset.url);
-      } catch (_cleanupError) {
+    if (uploadedAssets.length > 0) {
+      for (const asset of uploadedAssets) {
+        try {
+          await destroyUploadedAsset(asset.url);
+        } catch (_) { }
       }
     }
 
