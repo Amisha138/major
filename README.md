@@ -41,3 +41,4 @@ BookWeb is a full-stack second-hand book exchange platform for students. Sellers
 - Loading, retry, and empty-state coverage across core pages
 - Environment examples for both apps
 # major
+# major
