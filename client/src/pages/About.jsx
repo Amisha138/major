@@ -11,6 +11,7 @@ import amishaPhoto from "../assets/amisha.jpg";
 import juhiPhoto from "../assets/juhi.jpg";
 import ankitPhoto from "../assets/ankit.jpg";
 import analdipPhoto from "../assets/analdip-clean.jpg";
+import akashPhoto from "../assets/akash.jpg"
 
 const featureCards = [
   {
@@ -40,31 +41,31 @@ const teamMembers = [
   {
     name: "Amisha Kumari",
     photo: amishaPhoto,
-    role: "Frontend Developer",
+    role: "Frontend & UI Design",
     note: "Focused on shaping the student-friendly direction of the project.",
   },
   {
     name: "Juhi Kumari",
     photo: juhiPhoto,
-    role: "Frontend Developer",
+    role: "UI Planning & Content",
     note: "Contributed to the overall experience and presentation of the platform.",
   },
   {
     name: "Akash Kumar",
-    photo: "",
-    role: "Database Developer & API Integration",
+    photo: akashPhoto,
+    role: "Backend & Database",
     note: "Handled database design and API integration for the platform.",
   },
   {
     name: "Ankit K Gupta",
     photo: ankitPhoto,
-    role: "Testing",
+    role: "Testing & Debugging",
     note: "Ensured the platform works smoothly through proper testing.",
   },
   {
     name: "Analdip Kumar",
     photo: analdipPhoto,
-    role: "Backend Developer",
+    role: "Documentation & Research",
     note: "Built and strengthened the backend and core functionality.",
   },
 ];
